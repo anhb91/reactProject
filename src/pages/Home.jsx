@@ -1,7 +1,7 @@
-import { userRouter } from "../hooks/userRouter"
+import { useRouter } from "../hooks/useRouter"
 
 export function HomePage () {
-  const { navigateTo } = userRouter()
+  const { navigateTo } = useRouter()
 
   const handleSearch = (event) => {
     event.preventDefault()

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Pagination } from '../components/Pagination.jsx'
 import { SearchFormSection } from '../components/SearchFormSection.jsx'
 import { JobListings } from '../components/JobListings.jsx'
-import { userRouter } from '../hooks/userRouter.jsx'
+import { useRouter } from '../hooks/useRouter.jsx'
 
 const RESULTS_PER_PAGE = 4
 
@@ -30,7 +30,7 @@ const useFilters = () => {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
 
-  const { navigateTo } = userRouter()
+  const { navigateTo } = useRouter()
 
   useEffect(() => {
     async function fetchJobs() {
