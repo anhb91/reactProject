@@ -43,12 +43,13 @@ const useSearchForm = ({ idTechnology, idLocation, idExperienceLevel, idText, on
   }
 }
 
-export function SearchFormSection ({ onTextFilter, onSearch, initialText }) {
+export function SearchFormSection ({ onTextFilter, onSearch, initialText, hasActiveFilters }) {
   const idText = useId()
   const idTechnology = useId()
   const idLocation = useId()
   const idExperienceLevel = useId()
 
+  const selectRef = useRef()
   const inputRef = useRef()
 
   const {
@@ -62,6 +63,11 @@ export function SearchFormSection ({ onTextFilter, onSearch, initialText }) {
     inputRef.current.value = ""
     onTextFilter("")
   }
+
+  const handleClearFilter = (event) => {
+    selectRef.current.value = ''
+  }
+  
 
   return (
     <section className="jobs-search">
@@ -93,7 +99,7 @@ export function SearchFormSection ({ onTextFilter, onSearch, initialText }) {
         </div>
 
         <div className="search-filters">
-          <select name={idTechnology} id="filter-technology">
+          <select ref={selectRef} name={idTechnology} id="filter-technology">
             <option value="">Tecnología</option>
             <optgroup label="Tecnologías populares">
               <option value="javascript">JavaScript</option>
@@ -111,7 +117,7 @@ export function SearchFormSection ({ onTextFilter, onSearch, initialText }) {
             <option value="php">PHP</option>
           </select>
 
-          <select name={idLocation} id="filter-location">
+          <select ref={selectRef} name={idLocation} id="filter-location">
             <option value="">Ubicación</option>
             <option value="remoto">Remoto</option>
             <option value="cdmx">Ciudad de México</option>
@@ -120,13 +126,16 @@ export function SearchFormSection ({ onTextFilter, onSearch, initialText }) {
             <option value="barcelona">Barcelona</option>
           </select>
 
-          <select name={idExperienceLevel} id="filter-experience-level">
+          <select ref={selectRef} name={idExperienceLevel} id="filter-experience-level">
             <option value="">Nivel de experiencia</option>
             <option value="junior">Junior</option>
             <option value="mid">Mid-level</option>
             <option value="senior">Senior</option>
             <option value="lead">Lead</option>
           </select>
+          {hasActiveFilters && <button onClick={handleClearFilter} className="btn-clear-filters">
+            clear filters
+          </button>}
         </div>
       </form>
 

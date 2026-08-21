@@ -1,0 +1,11 @@
+.link {
+  color: orange;
+}
+
+.link:hover {
+  opacity: 0.8;
+}
+
+.link:active {
+  transform: scale(0.98);
+}

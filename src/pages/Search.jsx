@@ -26,6 +26,8 @@ const useFilters = () => {
     return Number.isNaN(page) ? page : 1
   })
 
+  const hasActiveFilters = Object.values(filters).some( e => e != '');  
+  
   const [jobs, setJobs] = useState([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -106,7 +108,8 @@ const useFilters = () => {
     textToFilter,
     handlePageChange,
     handleSearch,
-    handleTextFilter
+    handleTextFilter,
+    hasActiveFilters,
   }
 }
 
@@ -120,7 +123,8 @@ export function SearchPage() {
     textToFilter,
     handlePageChange,
     handleSearch,
-    handleTextFilter
+    handleTextFilter,
+    hasActiveFilters,
   } = useFilters()
 
   const title = loading
@@ -136,6 +140,7 @@ export function SearchPage() {
         initialText={textToFilter}
         onSearch={handleSearch}
         onTextFilter={handleTextFilter}
+        hasActiveFilters={hasActiveFilters}
       />
 
       <section>

@@ -403,6 +403,10 @@ article {
     margin-top: .5rem;
   }
 
+  .btn-clear-filters {
+    margin-left: auto;
+  }
+
   form {
     width: 100%;
     max-width: 1280px;
