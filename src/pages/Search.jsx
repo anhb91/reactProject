@@ -5,54 +5,58 @@ import { SearchFormSection } from '../components/SearchFormSection.jsx'
 import { JobListings } from '../components/JobListings.jsx'
 import { Spinner } from '../components/Spinner.jsx'
 import { ErrorMessage } from '../components/ErrorMessage.jsx'
-import { useRouter } from '../hooks/useRouter.jsx'
 import { useLocalStorage } from '../hooks/useLocalStorage.jsx'
+import { useSearchParams } from 'react-router'
 
 const RESULTS_PER_PAGE = 4
 const FILTERS_STORAGE_KEY = 'devjobs:filters'
 const SEARCH_TEXT_STORAGE_KEY = 'devjobs:searchText'
 
+const EMPTY_FILTERS = {
+  technology: '',
+  location: '',
+  experienceLevel: ''
+}
+
 const useFilters = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
   // Si la URL trae filtros/texto, deben ganar sobre lo guardado en localStorage
   // (para no romper links compartidos). Esto se hace una sola vez, antes de que
   // useLocalStorage lea la clave por primera vez.
   const primedFromUrlRef = useRef(null)
   if (primedFromUrlRef.current == null) {
     primedFromUrlRef.current = true
-    const params = new URLSearchParams(window.location.search)
 
-    if (params.has('technology') || params.has('type') || params.has('level')) {
+    if (searchParams.has('technology') || searchParams.has('type') || searchParams.has('level')) {
       localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify({
-        technology: params.get('technology') || '',
-        location: params.get('type') || '',
-        experienceLevel: params.get('level') || ''
+        technology: searchParams.get('technology') || '',
+        location: searchParams.get('type') || '',
+        experienceLevel: searchParams.get('level') || ''
       }))
     }
 
-    if (params.has('text')) {
-      localStorage.setItem(SEARCH_TEXT_STORAGE_KEY, JSON.stringify(params.get('text') || ''))
+    if (searchParams.has('text')) {
+      localStorage.setItem(SEARCH_TEXT_STORAGE_KEY, JSON.stringify(searchParams.get('text') || ''))
     }
   }
 
-  const [filters, setFilters] = useLocalStorage(FILTERS_STORAGE_KEY, (() => {
-    const params = new URLSearchParams(window.location.search)
-    return {
-      technology: params.get('technology') || '',
-      location: params.get('type') || '',
-      experienceLevel: params.get('level') || ''
-    }
-  })())
-  const [textToFilter, setTextToFilter] = useLocalStorage(
-    SEARCH_TEXT_STORAGE_KEY,
-    new URLSearchParams(window.location.search).get('text') || ''
-  )
-  const [currentPage, setCurrentPage] = useState(() => {
-    const params = new URLSearchParams(window.location.search)
-    const page = Number(params.get('page'))
-    return Number.isNaN(page) ? page : 1
+  const [filters, setFilters] = useLocalStorage(FILTERS_STORAGE_KEY, {
+    technology: searchParams.get('technology') || '',
+    location: searchParams.get('type') || '',
+    experienceLevel: searchParams.get('level') || ''
   })
 
-  const hasActiveFilters = Object.values(filters).some( e => e != '');
+  const [textToFilter, setTextToFilter] = useLocalStorage(
+    SEARCH_TEXT_STORAGE_KEY,
+    searchParams.get('text') || ''
+  )
+
+  const [currentPage, setCurrentPage] = useState(() => {
+    const page = Number(searchParams.get('page'))
+    return Number.isInteger(page) && page > 0 ? page : 1
+  })
+
+  const hasActiveFilters = Object.values(filters).some(value => value !== '')
 
   const [jobs, setJobs] = useState([])
   const [total, setTotal] = useState(0)
@@ -60,27 +64,31 @@ const useFilters = () => {
   const [error, setError] = useState(null)
   const [retryCount, setRetryCount] = useState(0)
 
-  const { navigateTo } = useRouter()
-
   useEffect(() => {
+    const controller = new AbortController()
+
     async function fetchJobs() {
       try {
         setLoading(true)
         setError(null)
 
-        const params = new URLSearchParams()
-        if (textToFilter) params.append('text', textToFilter)
-        if (filters.technology) params.append('technology', filters.technology)
-        if (filters.location) params.append('type', filters.location)
-        if (filters.experienceLevel) params.append('level', filters.experienceLevel)
+        // Se construyen params nuevos en cada fetch: nunca mutar los de la URL,
+        // si no limit/offset acaban filtrándose a la barra de direcciones.
+        const query = new URLSearchParams()
+
+        if (textToFilter) query.set('text', textToFilter)
+        if (filters.technology) query.set('technology', filters.technology)
+        if (filters.location) query.set('type', filters.location)
+        if (filters.experienceLevel) query.set('level', filters.experienceLevel)
 
         const offset = (currentPage - 1) * RESULTS_PER_PAGE
-        params.append('limit', RESULTS_PER_PAGE)
-        params.append('offset', offset)
+        query.set('limit', RESULTS_PER_PAGE)
+        query.set('offset', offset)
 
-        const queryParams = params.toString()
-
-        const response = await fetch(`https://jscamp-api.vercel.app/api/jobs?${queryParams}`)
+        const response = await fetch(
+          `https://jscamp-api.vercel.app/api/jobs?${query.toString()}`,
+          { signal: controller.signal }
+        )
 
         if (!response.ok) {
           throw new Error(`Error ${response.status} al obtener los empleos`)
@@ -91,6 +99,8 @@ const useFilters = () => {
         setJobs(json.data)
         setTotal(json.total)
       } catch (error) {
+        if (error.name === 'AbortError') return
+
         console.error('Error fetching jobs:', error)
         setError(error)
         setJobs([])
@@ -101,28 +111,38 @@ const useFilters = () => {
     }
 
     fetchJobs()
+
+    return () => controller.abort()
   }, [filters, currentPage, textToFilter, retryCount])
 
   const handleRetry = () => {
     setRetryCount(count => count + 1)
   }
 
+  // Sincroniza el estado -> URL. Cada valor vacío se borra, si no los params
+  // quedan pegados para siempre (solo se hacía set, nunca delete).
   useEffect(() => {
-    const params = new URLSearchParams()
+    setSearchParams(params => {
+      const next = new URLSearchParams(params)
 
-    if (textToFilter) params.append('text', textToFilter)
-    if (filters.technology) params.append('technology', filters.technology)
-    if (filters.location) params.append('type', filters.location)
-    if (filters.experienceLevel) params.append('level', filters.experienceLevel)
+      const syncParam = (key, value) => {
+        if (value) next.set(key, value)
+        else next.delete(key)
+      }
 
-    if (currentPage > 1) params.append('page', currentPage)
+      syncParam('text', textToFilter)
+      syncParam('technology', filters.technology)
+      syncParam('type', filters.location)
+      syncParam('level', filters.experienceLevel)
+      syncParam('page', currentPage > 1 ? String(currentPage) : '')
 
-    const newUrl = params.toString()
-      ? `${window.location.pathname}?${params.toString()}`
-      : window.location.pathname
+      // limit/offset son detalle de la llamada a la API, no del enlace compartible
+      next.delete('limit')
+      next.delete('offset')
 
-    navigateTo(newUrl)
-  }, [filters, currentPage, textToFilter, navigateTo])
+      return next
+    }, { replace: true })
+  }, [filters, currentPage, textToFilter, setSearchParams])
 
   const totalPages = Math.ceil(total / RESULTS_PER_PAGE)
 
@@ -132,6 +152,11 @@ const useFilters = () => {
 
   const handleSearch = (filters) => {
     setFilters(filters)
+    setCurrentPage(1)
+  }
+
+  const handleClearFilters = () => {
+    setFilters(EMPTY_FILTERS)
     setCurrentPage(1)
   }
 
@@ -151,13 +176,14 @@ const useFilters = () => {
     textToFilter,
     handlePageChange,
     handleSearch,
+    handleClearFilters,
     handleTextFilter,
     handleRetry,
     hasActiveFilters,
   }
 }
 
-export function SearchPage() {
+export default function SearchPage() {
   const {
     jobs,
     total,
@@ -169,6 +195,7 @@ export function SearchPage() {
     textToFilter,
     handlePageChange,
     handleSearch,
+    handleClearFilters,
     handleTextFilter,
     handleRetry,
     hasActiveFilters,
@@ -187,6 +214,7 @@ export function SearchPage() {
         initialText={textToFilter}
         filters={filters}
         onSearch={handleSearch}
+        onClearFilters={handleClearFilters}
         onTextFilter={handleTextFilter}
         hasActiveFilters={hasActiveFilters}
       />
