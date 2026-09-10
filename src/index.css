@@ -264,52 +264,6 @@ button {
   }
 }
 
-/* Features Section */
-main > section:nth-child(2) {
-  padding-inline: 1rem;
-  background-color: var(--background);
-  padding-top: 2rem;
-
-  & > header {
-    gap: 2px;
-    flex-direction: column;
-
-    h2 {
-      margin-bottom: 0;
-    }
-
-    p {
-      opacity: .75;
-    }
-  }
-
-  & > div {
-    max-width: 1280px;
-    margin: 0 auto;
-  }
-}
-
-main > section:nth-child(2) h2 {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 1rem;
-}
-
-main > section:nth-child(2) > div > div:first-child > p {
-  font-size: 1.125rem;
-  color: var(--text-muted);
-  max-width: 42rem;
-  margin: 0 auto;
-}
-
-/* Grid de Features */
-main > section:nth-child(2) footer {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px
-}
-
 /* Feature Cards */
 /* article {
   background-color: var(--card-bg);
@@ -403,10 +357,6 @@ article {
     margin-top: .5rem;
   }
 
-  .btn-clear-filters {
-    margin-left: auto;
-  }
-
   form {
     width: 100%;
     max-width: 1280px;
@@ -460,4 +410,55 @@ article {
     background: #4caf50;
     pointer-events: none;
   }
+}
+
+.btn-clear-filters {
+    margin-left: auto;
+  }
+
+
+.prose {
+  line-height: 1.75;
+}
+
+.prose ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+}
+
+.prose li {
+  margin: 0.5rem 0;
+}
+
+.prose p {
+  margin: 1rem 0;
+}
+
+.prose strong {
+  font-weight: 600;
+  color: #fff;
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose code {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+/* Iconos para listas */
+.prose ul li::marker {
+  content: "✓ ";
+  color: #3b82f6;
+  font-weight: bold;
+}
+
+.nav-link-active {
+  color: yellow;
+  pointer-events: none;
 }

@@ -1,24 +1,25 @@
+import { Routes, Route } from "react-router";
 import { Header } from './components/Header.jsx'
 import { Footer } from './components/Footer.jsx'
 
-import { HomePage } from './pages/Home.jsx'
-import { SearchPage } from './pages/Search.jsx'
-import { NotFoundPage } from './pages/404.jsx'
-import { Route } from './components/Route.jsx'
-import { useRouter } from './hooks/useRouter.jsx'
+import { lazy, Suspense } from "react";
 
-const ROUTES = ['/', '/search']
+const HomePage = lazy(() => import('./pages/Home.jsx'))
+const SearchPage = lazy(() => import('./pages/Search.jsx'))
+const NotFoundPage = lazy(() => import('./pages/404.jsx'))
+const JobDetail = lazy(() => import('./pages/Detail.jsx'))
 
 function App() {
-  const { currentPath } = useRouter()
-  const isKnownRoute = ROUTES.includes(currentPath)
-
+  
   return (
     <>
       <Header />
-      <Route path="/" component={HomePage} />
-      <Route path="/search" component={SearchPage} />
-      {!isKnownRoute && <NotFoundPage />}
+      <Routes>
+        <Route path="/" element={<HomePage/>} />
+        <Route path="/search" element={<SearchPage/>} />
+        <Route path="/jobs/:jobId" element={<JobDetail/>}/>
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
       <Footer />
     </>
   )

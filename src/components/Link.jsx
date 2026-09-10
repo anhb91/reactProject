@@ -1,17 +1,14 @@
-import { useRouter } from "../hooks/useRouter"
+import { Link as NavLink } from "react-router";
 import styles from './Link.module.css'
 
-export function Link ({ href, children, ...restOfProps }) {
-  const { navigateTo, currentPath } = useRouter()
-
-  const handleClick = (event) => {
-    event.preventDefault()
-    navigateTo(href)
-  }
-
+export function Link ({ href, className, children, ...restOfProps }) {
   return (
-    <a className = {currentPath === href ? styles.link : ""} href={href} {...restOfProps} onClick={handleClick}>
+    <NavLink
+      to={href}
+      className={[href ? styles.link : "", className].filter(Boolean).join(" ")}
+      {...restOfProps}
+    >
       {children}
-    </a>
+    </NavLink>
   )
 }
