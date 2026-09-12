@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
-
+import { useState, useEffect } from "react"
+import { useParams, useNavigate } from "react-router"
+import { Link } from "../components/Link"
 import snarkdown from 'snarkdown'
 import styles from './Detail.module.css'
-import { Link } from "../components/Link";
-import { useAuthStore } from "../store/authStore";
+import { useAuthStore } from "../store/authStore"
+import { useFavoritesStore } from "../store/favoritesStore"
 import Spinner from "../components/Spinner.jsx";
 
 function JobSection ({ title, content }) {
@@ -44,6 +44,19 @@ function DetailPageBreadCrumb ({ job }) {
     )
 }
 
+function DetailFavoriteButton ({ jobId }) {
+    const { isFavorite, toggleFavorite } = useFavoritesStore()
+
+    return (
+        <button
+        onClick={() => toggleFavorite(jobId)}
+        aria-label={isFavorite(jobId) ? 'Remove from favorites' : 'Add to favorites'}
+        >
+        {isFavorite(jobId) ? '❤️' : '🤍'}
+        </button>
+    )
+}
+
 function DetailPageHeader ({ job }) {
     return (
         <>
@@ -57,7 +70,7 @@ function DetailPageHeader ({ job }) {
         </header>
 
         <DetailApplyButton />
-        {/* <DetailFavoriteButton jobId={job.id} /> */}
+        <DetailFavoriteButton jobId={job.id} />
         </>
     )
 }
@@ -71,19 +84,6 @@ function DetailApplyButton () {
         </button>
     )
 }
-
-// function DetailFavoriteButton ({ jobId }) {
-//     const { isFavorite, toggleFavorite } = useFavoritesStore()
-
-//     return (
-//         <button
-//         onClick={() => toggleFavorite(jobId)}
-//         aria-label={isFavorite(jobId) ? 'Remove from favorites' : 'Add to favorites'}
-//         >
-//         {isFavorite(jobId) ? '❤️' : '🤍'}
-//         </button>
-//     )
-// }
 
 
 export default function JobDetail () {
