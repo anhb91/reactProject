@@ -459,6 +459,6 @@ article {
 }
 
 .nav-link-active {
-  color: yellow;
+  color: orange;
   pointer-events: none;
 }

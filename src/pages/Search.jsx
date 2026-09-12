@@ -3,10 +3,10 @@ import { useEffect, useRef, useState } from 'react'
 import { Pagination } from '../components/Pagination.jsx'
 import { SearchFormSection } from '../components/SearchFormSection.jsx'
 import { JobListings } from '../components/JobListings.jsx'
-import { Spinner } from '../components/Spinner.jsx'
 import { ErrorMessage } from '../components/ErrorMessage.jsx'
 import { useLocalStorage } from '../hooks/useLocalStorage.jsx'
 import { useSearchParams } from 'react-router'
+import Spinner from '../components/Spinner.jsx'
 
 const RESULTS_PER_PAGE = 4
 const FILTERS_STORAGE_KEY = 'devjobs:filters'

@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import snarkdown from 'snarkdown'
 import styles from './Detail.module.css'
 import { Link } from "../components/Link";
+import { useAuthStore } from "../store/authStore";
 
 function JobSection ({ title, content }) {
     const html = snarkdown(content)
@@ -61,10 +62,10 @@ function DetailPageHeader ({ job }) {
 }
 
 function DetailApplyButton () {
-    // const { isLoggedIn } = useAuthStore()
+    const { isLoggedIn } = useAuthStore()
 
     return (
-        <button className={styles.applyButton}>
+        <button disabled={!isLoggedIn} className={styles.applyButton}>
         {"Aplicar"}
         </button>
     )
