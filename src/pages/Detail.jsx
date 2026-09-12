@@ -5,6 +5,7 @@ import snarkdown from 'snarkdown'
 import styles from './Detail.module.css'
 import { Link } from "../components/Link";
 import { useAuthStore } from "../store/authStore";
+import Spinner from "../components/Spinner.jsx";
 
 function JobSection ({ title, content }) {
     const html = snarkdown(content)
@@ -90,10 +91,16 @@ export default function JobDetail () {
     const navigate = useNavigate()
 
     const [job, setJob] = useState(null)
-    const [loading, setLoading] = useState(false)
     const [error , setError] = useState(null)
+    const [loadedJobId, setLoadedJobId] = useState(null)
+
+    // Derivado en lugar de un estado propio: mientras el id cargado no sea el
+    // de la URL seguimos mostrando el spinner, tambien al cambiar de oferta.
+    const loading = loadedJobId !== jobId
 
     useEffect(() => {
+    let cancelled = false
+
     fetch(`https://jscamp-api.vercel.app/api/jobs/${jobId}`)
         .then(response => {
             if (!response.ok) {
@@ -103,18 +110,23 @@ export default function JobDetail () {
             return response.json()
         })
         .then(json => {
+            if (cancelled) return
             setJob(json)
+            setError(null)
+            setLoadedJobId(jobId)
         })
         .catch(err => {
+            if (cancelled) return
+            setJob(null)
             setError(err.message)
+            setLoadedJobId(jobId)
         })
-        .finally(() => {
-            setLoading(false)
-        })
-    }, [jobId])
+
+    return () => { cancelled = true }
+    }, [jobId, navigate])
 
     if (loading) {
-        <Spinner label={`Cargando empleo... ${id}`} />
+        return <Spinner label={`Cargando empleo... ${jobId}`} />
     }
 
     if (error || !job) {
