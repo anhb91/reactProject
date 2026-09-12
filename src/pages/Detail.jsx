@@ -104,13 +104,15 @@ export default function JobDetail () {
     fetch(`https://jscamp-api.vercel.app/api/jobs/${jobId}`)
         .then(response => {
             if (!response.ok) {
-            navigate('/not-found')
+            // Cortamos la cadena: el cuerpo de un error no es la oferta.
+            navigate('/not-found', { replace: true })
+            return null
             }
 
             return response.json()
         })
         .then(json => {
-            if (cancelled) return
+            if (cancelled || json === null) return
             setJob(json)
             setError(null)
             setLoadedJobId(jobId)
