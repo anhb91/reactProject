@@ -4,11 +4,15 @@ import { Footer } from './components/Footer.jsx'
 
 import { lazy, Suspense } from "react";
 import Spinner from './components/Spinner.jsx'
+import { ProtectedRoute } from "./components/ProtectedRoute.jsx";
 
 const HomePage = lazy(() => import('./pages/Home.jsx'))
 const SearchPage = lazy(() => import('./pages/Search.jsx'))
 const NotFoundPage = lazy(() => import('./pages/404.jsx'))
 const JobDetail = lazy(() => import('./pages/Detail.jsx'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage.jsx'))
+const Login = lazy(() => import('./pages/Login.jsx'))
+const Register = lazy(() => import('./pages/Register.jsx'))
 
 function App() {
   
@@ -20,8 +24,14 @@ function App() {
           <Route path="/" element={<HomePage/>} />
           <Route path="/search" element={<SearchPage/>} />
           <Route path="/jobs/:jobId" element={<JobDetail/>}/>
-          <Route path="/not-found" element={<NotFoundPage />} />
+          <Route path="/profile" element={
+            <ProtectedRoute redirectTo="/login">
+              <ProfilePage />
+            </ProtectedRoute>
+          } />
           <Route path="*" element={<NotFoundPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
         </Routes>
       </Suspense>
       <Footer />
